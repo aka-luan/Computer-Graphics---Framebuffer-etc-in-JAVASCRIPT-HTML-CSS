@@ -1,0 +1,312 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <title>Computação Gráfica</title>
+  <script src="js/d3.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body style="background: lightcyan">
+
+<h1 class="rainbow-text">PAINTZINHO GAMER</h1>
+
+<div id="framebuffer">
+  <svg width="800px" height="1000px" viewport="0 0 600 400" id="container"></svg>
+</div>
+
+<div id="interface-1">
+  <div class="btn-input">
+    <button class="btn btn-primary" id="rotacionar" data-toggle="button" aria-pressed="false"  onclick="on_rotate(document.getElementById('pontos_ang').value)">ROTACIONAR</button>
+    <input type="text" placeholder="ang" id="pontos_ang">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="transladar" data-toggle="button" aria-pressed="false"  onclick="on_translate(document.getElementById('tvalue').value)">TRANSLADAR</button>
+    <input type="text" placeholder="tx, ty" id="tvalue">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="escalonar" data-toggle="button" aria-pressed="false"  onclick="on_scale(document.getElementById('svalue').value)">ESCALONAR</button>
+    <input type="text" placeholder="sx, sy" id="svalue">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="p-perspectiva" data-toggle="button" aria-pressed="false" onclick="on_pespective(document.getElementById('pontos_pers').value)">P. PERSPECTIVA</button>
+    <input type="text" placeholder="pt de fuga" id="pontos_pers">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="p-cabinet" data-toggle="button" aria-pressed="false" onclick="on_oblique(document.getElementById('pontos_obl').value)">P. OBLÍQUA</button>
+    <input type="text" placeholder="ang, e" id="pontos_obl">
+  </div>
+
+
+</div>
+<div id ="interface-2">
+  <div class="btn-input">
+    <button class="btn btn-primary" id="bresenham" data-toggle="button" aria-pressed="false" onclick="linha(document.getElementById('pontos_linha').value)">BRESENHAM</button>
+    <input type="text" placeholder="x1,y1,x2,y2" id="pontos_linha">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" data-toggle="button" aria-pressed="false" id="poligono" onclick="poligono(document.getElementById('pontos_pol').value)">POLÍGONO</button>
+    <input type="text" placeholder="x1,y1,x2,y2,x3,y3,x4,y4" id="pontos_pol">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="circulo" data-toggle="button" aria-pressed="false" onclick="circulo(document.getElementById('pontos_circ').value)">CÍRCULO</button>
+    <input type="text" placeholder="x,y,raio" id="pontos_circ">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="ellipse" data-toggle="button" aria-pressed="false" onclick="ellipse(document.getElementById('pontos_ellipse').value)">ELLIPSE</button>
+    <input type="text" placeholder="x,y,rX,rY, color" id="pontos_ellipse">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="bezier" data-toggle="button" aria-pressed="false" onclick="ptscontrol(document.getElementById('pontos_controle').value)">BEZIER</button>
+    <input type="text" placeholder="x1,y1,x2,y2,x3,y3,x4,y4" id="pontos_controle">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="floodfill" data-toggle="button" aria-pressed="false" onclick="floodfill(document.getElementById('pontos_floodfill').value)">FLOODFILL</button>
+    <input type="text" placeholder="x,y,cor, cor da aresta" id="pontos_floodfill">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="scanline" data-toggle="button" aria-pressed="false" onclick="scanline(document.getElementById('color_scanline').value)">SCANLINE</button>
+    <input type="text" placeholder="cor" id="color_scanline">
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="corteDePoligono" data-toggle="button" aria-pressed="false" onclick="corteDePoligono()">CORTE DE POLIGONO</button>
+  </div>
+  <div class="btn-input">
+    <button class="btn btn-primary" id="corteDeLinha" data-toggle="button" aria-pressed="false" onclick="corteDeLinha()">CORTE DE LINHA</button>
+  </div>
+  <div class="btn-input">
+  <div class="btn-input">
+    <button class="btn btn-primary" id="Limpar-Buffer" onclick="clean_buffer(svg)">LIMPAR BUFFER</button>
+  </div>
+</div>
+
+
+
+<script src="js/framebuffer.js"></script>
+<script src="js/bresenham.js"></script>
+<script src="js/transformacoes.js"></script>
+<script src="js/circulo.js"></script>
+<script src="js/curva.js"></script>
+<script src="js/ellipse.js"></script>
+<script src="js/floodfill.js"></script>
+<script src="js/poligono.js"></script>
+<script src="js/scanline.js"></script>
+<script src="js/corteLinha.js"></script>
+<script src="js/cortePoligonos.js"></script>
+<script src="js/projecoes.js"></script>
+
+
+<script>
+  let svg = d3.select("svg");
+  let pts = [];
+  let pts1 = [];
+  let corPoligono;
+  let colorBorder = 'black';
+  let square = [[10, 10], [50, 10], [50, 40], [10, 40]];
+
+  function linha(pontos) {
+    pts = [];
+    pts1 = [];
+    pts.push(pontos.split(','));
+    for (let i = 0; i < 4; i++){
+      if (i % 2 === 0) {
+        let x = Number(pts[0][i]);
+        let y = Number(pts[0][i+1]);
+        pts1.push([x,y]);
+      }
+    }
+    console.log(pts1);
+    desenha_linha(pts1[0][0], pts1[0][1], pts1[1][0], pts1[1][1], 'black');
+    create_buffer(svg);
+  }
+
+  function poligono(pontos){
+    pts = [];
+    pts1 = [];
+    pts.push(pontos.split(','));
+    for (let i = 0; i < pts[0].length; i++){
+      if (i % 2 === 0) {
+        let x = pts[0][i];
+        let y = pts[0][i+1];
+        pts1.push([x,y]);
+      }
+    }
+    console.log (pts1,pts);
+    corPoligono = "black";
+    polygon(pts1,corPoligono);
+    create_buffer(svg);
+  }
+
+  function circulo(pontos){
+    let x,y,r;
+    [x,y,r] = pontos.split(',');
+    x = Number(x);
+    y = Number(y);
+    r = Number(r);
+    circleMidPoint(x,y,r,'black');
+    create_buffer(svg);
+  }
+
+  function ellipse(pontos){
+    let xCenter,yCenter,rX,rY,x,y,color;
+    [x,y,rX,rY,color] = pontos.split(',');
+    xCenter = Number(x);
+    yCenter = Number(y);
+    rX = Number(rX);
+    rY = Number(rY);
+    console.log("funcionou",xCenter, yCenter, rX,rY);
+    ellipseMidPoint(xCenter, yCenter, rX,rY, color);
+    create_buffer(svg);
+  }
+
+  function ptscontrol(pontos){
+    pts = [];
+    pts1 = [];
+    pts.push(pontos.split(','));
+    for (let i = 0; i < pts[0].length; i++){
+      if (i % 2 === 0) {
+        let x = pts[0][i];
+        let y = pts[0][i+1];
+        pts1.push([x,y]);
+      }
+    }
+    console.log(pts1,pts);
+    bezier(pts1,'black');
+    create_buffer(svg);
+  }
+
+  function floodfill(pontos){
+    console.log(pontos);
+    let x,y,color,edgeColor;
+    [x,y,color,edgeColor] = pontos.split(',');
+    x = Number(x);
+    y = Number(y);
+    recursiveFill(x, y, color, edgeColor);
+    create_buffer(svg);
+  }
+
+  function scanline(color){
+    scanLine(pts1, color);
+    polygon(pts1,"black");
+    create_buffer(svg);
+  }
+  function corteDePoligono(){
+    clean_buffer(svg);
+    console.log("Corte de poligono");
+    let clippedPolygon  = clip(pts1,square);
+    polygon(clippedPolygon,"black");
+    polygon(square,"black");
+    create_buffer(svg);
+  }
+
+  function corteDeLinha(){
+    clean_buffer(svg);
+    console.log("Corte de Linha");
+    clipRext(10,10,50,40);
+    console.log(pts1);
+    cohenSutherlandClip(pts1[0][0],pts1[0][1],pts1[1][0],pts1[1][1],colorBorder);
+    polygon(square,"black");
+    create_buffer(svg);
+  }
+
+  function matriz(pontos){
+    let matriz = [[],[],[]];
+    for (let i = 0; i < pontos.length ; i++) {
+      matriz[0].push(pontos[i][0]);
+      matriz[1].push(pontos[i][1]);
+      matriz[2].push(1);
+    }
+    return matriz;
+  }
+
+  function inverseMat(mat) {
+    let arrTeste = [];
+    for (let j = 0; j <mat[0].length ; j++) {
+      arrTeste.push([mat[0][j],mat[1][j]]);
+
+    }
+    return arrTeste;
+  }
+
+  function mat3d(pontos, z){
+    let matriz = [[],[],[],[]];
+    for (let i = 0; i <pontos.length ; i++) {
+      matriz[0].push(pontos[i][0]);
+      matriz[1].push(pontos[i][1]);
+      matriz[2].push(i);
+      if (!z){
+        matriz[3].push(i);
+      }else{
+        matriz[3].push(z[i]);
+      }
+    }
+    return matriz;
+  }
+
+  function on_translate(pontos){
+    let tx,ty;
+    [tx,ty] = pontos.split(',');
+    tx = Number(tx);
+    ty = Number(ty);
+    let move = matriz(pts1);
+    let moved = translacao(-pts[0][0], -pts[0][1], move);
+    moved = translacao(tx, ty, moved);
+    polygon(inverseMat(moved), 'blue');
+    create_buffer(svg);
+  }
+
+  function on_rotate(pontos){
+    let ang = Number(pontos);
+    let move = matriz(pts1);
+    let moved = translacao(-pts[0][0], -pts[0][1], move);
+    moved = rotacao(ang, moved);
+    moved = translacao(pts[0][0], pts[0][1], moved);
+    polygon(inverseMat(moved), 'blue');
+    create_buffer(svg);
+  }
+
+  function on_scale(pontos) {
+    let sx,sy;
+    [sx,sy] = pontos.split(',');
+    sx = Number(sx);
+    sy = Number(sy);
+    let move = matriz(pts1);
+    let moved = translacao(-pts1[0][0], -pts1[0][1], move);
+    moved = escala(sx, sy, moved);
+    moved = translacao(pts1[0][0], pts1[0][1], moved);
+    polygon(inverseMat(moved), 'blue');
+    create_buffer(svg);
+  }
+
+  function on_pespective(fuga){
+    fuga = Number(fuga);
+    let square1 = [[10,30],[20,50],[30,40],[40,10]];
+    let square2 = [[10,30],[20,50],[30,40],[40,10]];
+    let move = mat3d(square2,20);
+    let move1 = mat3d(square1,40);
+    perspective(move, fuga);
+    perspective(move1, fuga);
+    polygon(inverseMat(move),'blue');
+    polygon(inverseMat(move1),'red');
+    create_buffer(svg);
+  }
+
+  function on_oblique(pontos){
+    let ang, e;
+    [ang, value, e] = pontos.split(',');
+    ang = Number(ang);
+    e = Number(e);
+    let move = mat3d(pts1);
+    Oblique_Projection(move,ang,e);
+    polygon(inverseMat(move),'blue');
+    create_buffer(svg);
+  }
+
+
+  setFrame();
+  create_buffer(svg);
+
+
+</script>
+
+</body>
+</html>
